@@ -7,7 +7,51 @@ jQuery(function($) {
 	// QWERTY Text Input
 	// The bottom of this file is where the autocomplete extension is added
 	// ********************
-	$('.qwerty:first').keyboard({ layout: 'qwerty' });
+	$('.qwerty:first').keyboard({
+	   layout : 'qwerty',
+	   useCombos : false,
+	   deadKeys : {
+	      '^' : {
+	         a : "[â]",
+	         e : "[ê]",
+	         i : "[î]",
+	         o : "[ô]",
+	         u : "[û]",
+	         A : "[Â]",
+	         E : "[Ê]",
+	         I : "[Î]",
+	         O : "[Ô]",
+	         U : "[Û"
+
+	      },
+	      '`' : {
+	         a : "[à]",
+	         e : "[è]",
+	         u : "[ù]",
+	         A : "[À]",
+	         E : "[È]",
+	         U : "[Ù"
+
+	      },
+	      '"' : {
+	         e : "[ë]",
+	         i : "[ï]",
+	         u : "[ü]",
+		      E : "[Ë]",
+		      I : "[Ï]",
+		      U : "[Ü]"
+
+	      },
+	      "'" : {
+		      e : "[é]",
+		      E : "[É]"
+	      },
+	      "," : {
+		      c : "[ç]",
+		      C : "[Ç]"
+	      }
+	   },
+	});
 
 	// QWERTY Password
 	// ********************

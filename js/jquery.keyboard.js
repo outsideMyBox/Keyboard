@@ -99,6 +99,47 @@ CSS:
 $.keyboard = function(el, options){
 	var base = this, o;
 
+	function isDeadKey(charStr) {
+		return o.deadKeys && o.deadKeys.hasOwnProperty(charStr);
+	}
+	
+	/**
+	 * Return:
+	 * - the parameter 'charStr' if no dead key has been previously pressed.
+	 * - the dead key previously pressed if charStr is 'space' or a dead key.
+	 * - a new character if a dead key has just been previously pressed and a mapping exists for charStr (option keyboard.deadkeys).
+	 * - the empty string if charStr is a dead key.
+	 */
+		function getCharModifiedByDeadKey(charStr) {
+			var newCharStr = '';
+
+			if (base.lastDeadKeyStr == '') {
+				if (isDeadKey(charStr)) {
+					newCharStr = '';
+					base.lastDeadKeyStr = charStr;
+				} else {
+					newCharStr = charStr;
+				}
+			} else {
+				if (isDeadKey(charStr)) {
+					newCharStr = base.lastDeadKeyStr;
+					base.lastDeadKeyStr = charStr;
+				} else {
+					if (charStr == ' ') {
+						newCharStr = base.lastDeadKeyStr;
+					} else {
+						newCharStr = o.deadKeys[base.lastDeadKeyStr][charStr];
+						if (typeof newCharStr === 'undefined') {
+							newCharStr = base.lastDeadKeyStr + charStr;
+						}
+					}
+					base.lastDeadKeyStr = '';
+				}
+			}
+			return newCharStr;
+		}
+
+	
 	// Access to jQuery and DOM versions of element
 	base.$el = $(el);
 	base.el = el;
@@ -136,6 +177,8 @@ $.keyboard = function(el, options){
 
 		base.temp = [ '', 0, 0 ]; // used when building the keyboard - [keyset element, row, index]
 
+		base.lastDeadKeyStr = ''; // The last dead key entered to take into account, '' for none.
+		
 		// Bind events
 		$.each('initialized visible change hidden canceled accepted beforeClose'.split(' '), function(i,f){
 			if ($.isFunction(o[f])){
@@ -305,7 +348,9 @@ $.keyboard = function(el, options){
 		if (o.enterNavigation) { base.alwaysAllowed.push(13); } // add enter to allowed keys
 		base.$preview
 			.bind('keypress.keyboard', function(e){
+				
 				var k = String.fromCharCode(e.charCode || e.which);
+				
 				if (base.checkCaret) { base.lastCaret = base.$preview.caret(); }
 
 				// update caps lock - can only do this while typing =(
@@ -329,6 +374,16 @@ $.keyboard = function(el, options){
 						e.preventDefault();
 					}
 				}
+				var charWithDeadKey = getCharModifiedByDeadKey(k);
+				if (charWithDeadKey == '') {
+					e.preventDefault();
+					return;
+				}
+				else if (charWithDeadKey != k) {
+					base.insertText( charWithDeadKey );
+					e.preventDefault();
+				}
+				
 				base.checkMaxLength();
 
 			})
